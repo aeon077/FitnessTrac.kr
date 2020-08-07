@@ -1,5 +1,6 @@
 const { client } = require('./client');
 
+//preloads initial users into database
 async function createInitialUsers() {
     try {
         console.log("Starting to create users...");
@@ -32,6 +33,7 @@ async function createInitialUsers() {
     }
 }
 
+//select and return an array of all users
 async function getAllUsers() {
     try {
         const { rows } = await client.query(`
@@ -45,6 +47,8 @@ async function getAllUsers() {
     }
 }
 
+//createUser({ username, password })
+//make sure to hash the password before storing it to the database --stretch goal
 async function createUser({
     username,
     password,
@@ -65,6 +69,8 @@ async function createUser({
     }
 }
 
+//getUser({ username, password })
+//this should be able to verify the password against the hashed password -- stretch goal
 async function getUser({ username, password }) {
     try {
         const { rows: [user] } = await client.query(`

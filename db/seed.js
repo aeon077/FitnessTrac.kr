@@ -1,10 +1,9 @@
 const { client } = require('./client');
 const { getAllUsers, createInitialUsers, getUser } = require('./users');
 const { getAllActivities, createInitialActivities } = require('./activities');
+const { createInitialRoutines, getAllRoutines } = require('./routines');
 
-
-
-//TABLES
+//testing the database
 async function testDB() {
     try {
         console.log("Testing, testing ...is this database on?");
@@ -20,6 +19,10 @@ async function testDB() {
         console.log("Calling on user");
         const user = await getUser({ username: 'Bill', password: 'Apollo2010' });
         console.log("User:", user)
+
+        console.log("Calling getAllRoutines");
+        const routines = await getAllRoutines();
+        console.log("Result:", routines)
 
         console.log("Database test complete!");
     } catch (error) {
@@ -94,7 +97,7 @@ async function createTables() {
     }
 }
 
-
+//drops and rebuilds database, initial users/activities
 async function rebuildDB() {
     try {
         client.connect();
@@ -103,11 +106,13 @@ async function rebuildDB() {
         await createTables();
         await createInitialUsers();
         await createInitialActivities();
+        await createInitialRoutines();
     } catch (error) {
         throw error;
     }
 }
 
+//bootstrap
 rebuildDB()
     .then(testDB)
     .catch(console.error)

@@ -1,5 +1,6 @@
 const { client } = require('./client');
 
+//creating initial preloaded activities
 async function createInitialActivities() {
     try {
         console.log("Starting to create activities...");
@@ -47,6 +48,7 @@ async function createInitialActivities() {
     }
 }
 
+//select and return an array of all activities
 async function getAllActivities() {
     try {
         const { rows } = await client.query(`
@@ -60,6 +62,8 @@ async function getAllActivities() {
     }
 };
 
+//createActivity({ name, description })
+//return the new activity
 async function createActivity({
     name,
     description,
@@ -78,6 +82,10 @@ async function createActivity({
     }
 }
 
+//updateActivity({ id, name, description })
+//don't try to update the id
+//do update the name and description 
+//return the updated activity
 async function updateActivity({ id, fields = {} }) {
     //setString for mapping out name and description
     const setString = Object.keys(fields).map(
