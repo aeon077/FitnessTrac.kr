@@ -1,36 +1,33 @@
 const { client } = require('./client');
-const { getAllUsers } = require('./users');
-const users = require('./users');
+const { getUserByUsername } = require('./index');
 
 //creating initial preloaded activities
 async function createInitialRoutines() {
-
-    const [William, Kat, Chris] = await getAllUsers();
 
     try {
         console.log("Starting to create routines...");
 
         await createRoutine({
-            creatorId: William.id,
+            creatorId: 1,
             public: true,
-            name: "Monday Workout",
-            goal: "60 minutes",
+            name: "Monday",
+            goal: "Yoga of some kind",
             active: true
         })
 
         await createRoutine({
-            creatorId: Kat.id,
+            creatorId: 2,
             public: false,
             name: "Yoga Days",
-            goal: "60 minutes",
+            goal: "60 minutes every day",
             active: true
         })
 
         await createRoutine({
-            creatorId: Chris.id,
+            creatorId: 3,
             public: true,
             name: "Abs Day",
-            goal: "5 reps",
+            goal: "Rock hard abs.",
             active: true
         });
 
@@ -39,22 +36,58 @@ async function createInitialRoutines() {
         throw error;
     }
 }
-//select and return an array of all routines, include their activities
+
+//added this function to help with some functionality in the database (not in the methods listed)
+//helps in creating join in activities to the routine_activities to help with other functions, especially getAllRoutines including activities. 
+//defines routines_activities as a, activities as b. 
+//WHERE statement filters rows where left join does not succeed (in both a and b)
+async function getActivitiesByRoutine(routine) {
+    const { id } = routine
+    const { rows } = await client.query(`
+        SELECT 
+        a.id,
+        a.name,
+        a.description,
+        ra."routineId",
+        ra.duration,
+        ra.count
+        FROM activities AS a
+        LEFT JOIN routine_activities AS ra
+        ON a.id = ra."activityId"
+        WHERE ra."routineId" = $1;
+    `, [id])
+    return rows;
+}
+
+//select and return an array of all routines, *include their activities*
 async function getAllRoutines() {
     try {
-        const { rows } = await client.query(`
-      SELECT id, "creatorId", public, name, goal, active 
+        const { rows: routines } = await client.query(`
+      SELECT *
       FROM routines;
     `);
 
-        return rows;
+        const results = routines.map(async function (routine) {
+            const activities = await getActivitiesByRoutine(routine);
+            routine.activities = activities;
+            return routine;
+        });
+
+
+        const routineElem = await Promise.all(results).then(function (rout) {
+            // console.log(rout);
+            return rout;
+        });
+        return routineElem;
     } catch (error) {
+        console.log(`Error getting routines`, error);
         throw error;
     }
 }
 
 //createRoutine({ creatorId, public, name, goal })
 //create and return the new routine
+
 async function createRoutine({
     creatorId, public, name, goal
 }) {
@@ -71,7 +104,6 @@ async function createRoutine({
     }
 }
 
-//updateRoutine({ id, public, name, goal })
 //Find the routine with id equal to the passed in id
 //Don't update the routine id, but do update the public status, name, or goal, as necessary
 //Return the updated routine
@@ -99,38 +131,132 @@ async function updateRoutine({ id, fields = {} }) {
     }
 }
 
-//select and return an array of public routines, include their activities
+//selects and return an array of public routines, include their activities
 async function getPublicRoutines() {
     try {
-        const { rows: [routines] } = await client.query(`
-      SELECT id, "creatorId", public, name, goal, active 
+        const { rows: routines } = await client.query(`
+      SELECT *
       FROM routines
-      WHERE public=true;
-    `, [creatorId]);
+      WHERE public='true';
+    `);
+        //maps the activities_routines with public true
+        const results = routines.map(async function (routine) {
+            const activities = await getActivitiesByRoutine(routine);
+            routine.activities = activities;
+            return routine;
+        });
+        //maps out the routines from above
+        const routineElement = await Promise.all(results).then(function (rout) {
+            return rout;
+        });
 
-        if (!routines) {
-            throw {
-                name: "PublicUserError",
-                message: "Could not find any users with public posts"
-            }
-        }
-        //need to complete routines_activities first!!
-        const { rows: [user] } = await client.query(`
-        SELECT *
-        FROM users
-        INNER JOIN id ON routines."creatorId"
-        WHERE routines."creatorId=true;
-    `, [creatorId])
-
-        return rows;
+        return routineElement;
     } catch (error) {
+        console.log('Error retrieving public routines', error)
         throw error;
     }
 }
-//*******/
-//destroyRoutine(id)
-//remove routine from database
-//Make sure to delete all the routine_activities whose routine is the one being deleted.
+
+//select and return an array of all routines made by user, include their activities
+
+async function getAllRoutinesByUser({ username }) {
+    const user = await getUserByUsername({ username });
+    try {
+        const { rows: routines } = await client.query(`
+        SELECT *
+        FROM routines
+        WHERE "creatorId"=$1;
+        `, [user.id]);
+
+        const results = routines.map(async function (routine) {
+            const activities = await getActivitiesByRoutine(routine);
+            routine.activities = activities;
+            return routine;
+        });
+
+        const userActivities = await Promise.all(results).then(function (username) {
+            return username
+        });
+        return userActivities;
+    } catch (error) {
+        console.log('Error getting routines by user')
+        throw error
+    }
+}
+
+//getPublicRoutinesByUser
+//getPublicRoutinesByUser({ username })
+//select and return an array of public routines made by user, include their activities
+
+async function getPublicRoutinesByUser({ username }) {
+    const user = await getUserByUsername(username);
+    console.log("User: ", user)
+
+    try {
+        const { rows: routines } = await client.query(`
+        SELECT *
+        FROM routines
+        WHERE "creatorId"=$1
+        AND public='true';
+        `, [user.id]);
+
+        const results = routines.map(async function (routine) {
+            const activities = await getActivitiesByRoutine(routine);
+            routine.activities = activities;
+            return routine;
+        });
+
+        const routineEle = await Promise.all(results).then(function (elem) {
+            console.log(elem);
+            return elem;
+        });
+        return routineEle
+    } catch (error) {
+        console.log('Error getting public routines by user');
+        throw error
+    }
+};
+
+//getPublicRoutinesByActivity
+//getPublicRoutinesByActivity({ activityId })
+//select and return an array of public routines which have a specific activityId in their routine_activities join, include their activities
+//routines = a, routine_activities = b
+async function getPublicRoutinesByActivity({ activityId }) {
+    try {
+        const { rows: routines } = await client.query(`
+        SELECT
+        a.id,
+        a."creatorId",
+        a.public,
+        a.name,
+        a.goal,
+        b."activityId"
+        FROM routines AS a
+        JOIN routine_activities AS b
+        ON a.id = b."routineId"
+        WHERE "activityId"=$1
+        AND public='true';
+        `, [activityId]);
+
+        const results = routines.map(async function (routines) {
+            const activities = await getActivitiesByRoutine(routine);
+            routine.activities = activities;
+            return routine
+        });
+
+        const routineEle = await Promise.all(results).then(function (elem) {
+            return elem
+        });
+        return routineEle
+    } catch (error) {
+        console.log('Error getting public routines by activity')
+        throw error;
+    }
+}
+
+
+//removes routine from database
+//Makes sure to delete all the routine_activities whose routine is the one being deleted.
 async function destroyRoutine(id) {
     try {
         const { rows: [routines] } = await client.query(`
@@ -156,17 +282,19 @@ async function destroyRoutine(id) {
             message: "There was an error in deleting this routine"
         };
     }
-
 }
-
 
 
 module.exports = {
     client,
     createInitialRoutines,
+    getActivitiesByRoutine,
     getAllRoutines,
     createRoutine,
     updateRoutine,
     getPublicRoutines,
-    destroyRoutine
+    getAllRoutinesByUser,
+    getPublicRoutinesByActivity,
+    destroyRoutine,
+    getPublicRoutinesByUser
 }

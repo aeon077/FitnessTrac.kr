@@ -1,7 +1,16 @@
 const { client } = require('./client');
-const { getAllUsers, createInitialUsers, getUser } = require('./users');
-const { getAllActivities, createInitialActivities } = require('./activities');
-const { createInitialRoutines, getAllRoutines } = require('./routines');
+const { getAllUsers,
+    createInitialUsers,
+    getUser,
+    getAllActivities,
+    createInitialActivities,
+    createInitialRoutines,
+    getAllRoutines,
+    getPublicRoutines,
+    createInitialRoutineActivities,
+    getActivitiesByRoutine,
+    getPublicRoutinesByActivity,
+} = require('./index');
 
 //testing the database
 async function testDB() {
@@ -23,6 +32,18 @@ async function testDB() {
         console.log("Calling getAllRoutines");
         const routines = await getAllRoutines();
         console.log("Result:", routines)
+
+        console.log("Calling getPublicRoutines");
+        const pubRoutines = await getPublicRoutines();
+        console.log("Result:", pubRoutines)
+
+        console.log("Calling Activities by Routine")
+        const actRoutine = await getActivitiesByRoutine(1);
+        console.log('Result:', actRoutine)
+
+        console.log("Calling Public Routines by Activity ")
+        const pubRoutAct = await getPublicRoutinesByActivity(1);
+        console.log('Result:', pubRoutAct)
 
         console.log("Database test complete!");
     } catch (error) {
@@ -83,11 +104,12 @@ async function createTables() {
 
           CREATE TABLE routine_activities (
             id SERIAL PRIMARY KEY,
-            "routineId" INTEGER REFERENCES routines(id) UNIQUE NOT NULL,
-            "activityId" INTEGER REFERENCES activities(id) UNIQUE NOT NULL,
+            "routineId" INTEGER REFERENCES routines(id),
+            "activityId" INTEGER REFERENCES activities(id),
             duration INTEGER,
             count INTEGER,
-            active boolean DEFAULT true  
+            active boolean DEFAULT true,
+            UNIQUE ("routineId", "activityId")  
           );
       `);
         console.log("Tables have been built!")
@@ -107,6 +129,7 @@ async function rebuildDB() {
         await createInitialUsers();
         await createInitialActivities();
         await createInitialRoutines();
+        await createInitialRoutineActivities()
     } catch (error) {
         throw error;
     }

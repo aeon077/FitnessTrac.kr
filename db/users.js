@@ -86,10 +86,26 @@ async function getUser({ username, password }) {
     }
 }
 
+//get user without password
+//created this for help with getAllRoutinesByUser
+async function getUserByUsername(username) {
+    try {
+        const { rows: [user] } = await client.query(`
+        SELECT *
+        FROM username=$1;
+        `, [username]);
+        return user
+    } catch (error) {
+        console.log('Error getting username ${username}')
+        throw error;
+    }
+}
+
 module.exports = {
     client,
     getAllUsers,
     createInitialUsers,
     createUser,
-    getUser
+    getUser,
+    getUserByUsername
 }

@@ -69,14 +69,14 @@ async function createActivity({
     description,
 }) {
     try {
-        const { rows: [activity] } = await client.query(`
+        const { rows } = await client.query(`
       INSERT INTO activities (name, description) 
       VALUES($1, $2) 
       ON CONFLICT (name) DO NOTHING 
       RETURNING *;
     `, [name, description]);
 
-        return activity;
+        return rows;
     } catch (error) {
         throw error;
     }
