@@ -184,8 +184,7 @@ async function getAllRoutinesByUser({ username }) {
     }
 }
 
-//getPublicRoutinesByUser
-//getPublicRoutinesByUser({ username })
+
 //select and return an array of public routines made by user, include their activities
 
 async function getPublicRoutinesByUser({ username }) {
@@ -217,8 +216,7 @@ async function getPublicRoutinesByUser({ username }) {
     }
 };
 
-//getPublicRoutinesByActivity
-//getPublicRoutinesByActivity({ activityId })
+
 //select and return an array of public routines which have a specific activityId in their routine_activities join, include their activities
 //routines = a, routine_activities = b
 async function getPublicRoutinesByActivity({ activityId }) {
