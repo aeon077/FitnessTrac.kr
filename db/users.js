@@ -99,6 +99,17 @@ async function getUserByUsername(username) {
         console.log('Error getting username ${username}')
         throw error;
     }
+};
+
+function requireUser(req, res, next) {
+    if (!req.user) {
+        next({
+            name: "MissingUserError",
+            message: "You must be logged in to perform this action"
+        });
+    }
+
+    next();
 }
 
 module.exports = {
@@ -107,5 +118,6 @@ module.exports = {
     createInitialUsers,
     createUser,
     getUser,
-    getUserByUsername
+    getUserByUsername,
+    requireUser
 }

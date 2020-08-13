@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { getUserById, getUserByUsername } = require('../db');
+const { getUserByUsername } = require('../db');
 const { JWT_SECRET } = process.env;
 
 const express = require('express');
@@ -39,15 +39,15 @@ apiRouter.use('/users', usersRouter);
 const activitiesRouter = require('./activities');
 apiRouter.use('/activities', activitiesRouter);
 
-const routineRouter = require('./routines');
-apiRouter.use('./routines', routineRouter);
+// const routineRouter = require('./routines');
+// apiRouter.use('/routines', routineRouter);
 
-const routineActRouter = require('./routine_activities');
-apiRouter.use('./routines', routineActRouter);
+// const routineActRouter = require('./routine_activities');
+// apiRouter.use('/routines_activities', routineActRouter);
 
 //error handler
 apiRouter.use((error, req, res, next) => {
     res.send(error);
 });
 
-module.exports = apiRouter, activitiesRouter;
+module.exports = apiRouter;

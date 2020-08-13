@@ -1,5 +1,6 @@
 //creating a foundation for the web server
-const PORT = 3000;
+require('dotenv').config();
+const { PORT = 3000 } = process.env;
 const express = require('express');
 const server = express();
 
@@ -10,9 +11,6 @@ server.use(bodyParser.json());
 const morgan = require('morgan');
 server.use(morgan('dev'));
 
-const apiRouter = require('./api');
-server.use('/api', apiRouter);
-
 server.use((req, res, next) => { //middleware that tells server to always run this function (three lines of code)
     console.log("<____Body Logger START____>");
     console.log(req.body);
@@ -20,6 +18,12 @@ server.use((req, res, next) => { //middleware that tells server to always run th
 
     next();
 });
+
+//set up routes
+const apiRouter = require('./api/index');
+server.use('/api', apiRouter);
+
+
 
 
 //connects client to the server
