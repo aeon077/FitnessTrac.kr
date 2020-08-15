@@ -67,7 +67,7 @@ usersRouter.post('/register', async (req, res, next) => {
     const SALT_COUNT = 10;
 
     try {
-        const user = await getUser(username);
+        const username = await getUser(username);
 
         if (await getUser({ username })) {
             next({

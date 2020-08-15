@@ -39,11 +39,11 @@ apiRouter.use('/users', usersRouter);
 const activitiesRouter = require('./activities');
 apiRouter.use('/activities', activitiesRouter);
 
-// const routineRouter = require('./routines');
-// apiRouter.use('/routines', routineRouter);
+const routinesRouter = require('./routines');
+apiRouter.use('/routines', routinesRouter);
 
-// const routineActRouter = require('./routine_activities');
-// apiRouter.use('/routines_activities', routineActRouter);
+const routineActivtyRouter = require('./routine_activities');
+apiRouter.use('/routines_activities', routineActivtyRouter);
 
 //error handler
 apiRouter.use((error, req, res, next) => {
