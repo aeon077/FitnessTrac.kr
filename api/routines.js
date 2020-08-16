@@ -42,21 +42,21 @@ routinesRouter.post('/', requireUser, async (req, res, next) => {
 //Updates a routine, public/private, name, and goal
 //must be logged in and author
 routinesRouter.patch('/:routineId', requireUser, async (req, res, next) => {
-    const { routineId: id } = req.params;
+    const { creatorId: id } = req.params;
     const { public, name, goal } = req.body;
     const { user } = req.user;
 
     try {
         const { creatorId } = await getAllRoutinesByUser({ username })
+        console.log(username)
         if (creatorId !== user.id) {
             next({
                 name: 'notTheCreator',
                 message: 'Only the creator can edit this routine.'
             })
         }
-        const routine = await updateRoutine({ id, public, name, goal });
-
-        res.send({ message: "routineUpdated", routine })
+        const routine = await updateRoutine(id, { public, name, goal });
+        res.send({ routine })
     } catch {
         next({
             name: 'errorUpdateRoutine',
@@ -98,20 +98,18 @@ routinesRouter.post('/:routineId/activities', async (req, res, next) => {
     const { routineId } = req.params;
     const { activityId, duration, count } = req.body;
 
+    const postData = {}
+
     try {
+        postData.routineId = routineId;
+        postData.activityId = activityId;
+        postData.count = count;
+        postData.duration = duration;
         const routine = await addActivityToRoutine({ routineId, activityId, duration, count });
-        if (routine.routineId = routineId) {
-            next({
-                name: 'errorRoutineId',
-                message: 'This routine already exists'
-            })
-        } else if (routine.activityId = activityId) {
-            next({
-                name: 'errorActivityId',
-                message: 'This activity already exists in this routine'
-            })
-        }
-        res.send({ routine });
+        console.log(routine);
+
+        res.send({ routine })
+        // };
     } catch {
         next({
             name: 'errorActivityRoutineAdd',

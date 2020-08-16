@@ -22,8 +22,8 @@ apiRouter.use(async (req, res, next) => {
                 req.user = await getUserByUsername(username);
                 next();
             }
-        } catch ({ name, message }) {
-            next({ name, message });
+        } catch {
+            next({ name: 'tokenError', message: 'Token unable to be verified for this user' });
         }
     } else { //or it will throw error with name and message
         next({

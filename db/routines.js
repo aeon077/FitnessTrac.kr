@@ -85,21 +85,21 @@ async function getAllRoutines() {
     }
 }
 
-//createRoutine({ creatorId, public, name, goal })
-//create and return the new routine
+//creates and returns the new routine
 
 async function createRoutine({
     creatorId, public, name, goal
 }) {
     try {
-        const { rows: [routine] } = await client.query(`
+        const { rows } = await client.query(`
       INSERT INTO routines ("creatorId", public, name, goal) 
       VALUES($1, $2, $3, $4) 
       RETURNING *;
     `, [creatorId, public, name, goal]);
 
-        return routine;
+        return rows;
     } catch (error) {
+        console.log(error);
         throw error;
     }
 }
@@ -165,17 +165,17 @@ async function getAllRoutinesByUser({ username }) {
         const { rows: routines } = await client.query(`
         SELECT *
         FROM routines
-        WHERE "creatorId"=$1;
+        WHERE "creatorId"=$1
         `, [user.id]);
 
-        const results = routines.map(async function (routine) {
+        const results = routines.map(async (routine) => {
             const activities = await getActivitiesByRoutine(routine);
             routine.activities = activities;
             return routine;
         });
 
-        const userActivities = await Promise.all(results).then(function (username) {
-            return username
+        const userActivities = await Promise.all(results).then(function (arr) {
+            return arr
         });
         return userActivities;
     } catch (error) {
@@ -188,8 +188,8 @@ async function getAllRoutinesByUser({ username }) {
 //select and return an array of public routines made by user, include their activities
 
 async function getPublicRoutinesByUser({ username }) {
-    const user = await getUserByUsername(username);
-    console.log("User: ", user)
+    const user = await getUserByUsername({ username });
+    console.log(user)
 
     try {
         const { rows: routines } = await client.query(`
@@ -199,13 +199,13 @@ async function getPublicRoutinesByUser({ username }) {
         AND public='true';
         `, [user.id]);
 
-        const results = routines.map(async function (routine) {
+        const results = routines.map(async (routine) => {
             const activities = await getActivitiesByRoutine(routine);
             routine.activities = activities;
-            return routine;
+            return activity;
         });
 
-        const routineEle = await Promise.all(results).then(function (elem) {
+        const routineEle = await Promise.all(results).then((elem) => {
             console.log(elem);
             return elem;
         });

@@ -1,4 +1,6 @@
 const { client } = require('./client');
+const bcrypt = require('bcrypt');
+const { getAllRoutinesByUser } = require('./index');
 
 //preloads initial users into database
 async function createInitialUsers() {
@@ -69,17 +71,14 @@ async function createUser({
     }
 }
 
-//getUser({ username, password })
-//this should be able to verify the password against the hashed password -- stretch goal
+//gets user info with username and password
+//this should be able to verify the password against the hashed password
 async function getUser({ username, password }) {
     try {
-        const { rows: [user] } = await client.query(`
-        SELECT *
-        FROM users
-        WHERE username=$1
-        AND password=$2
-      `, [username, password]);
-        //this is where I would check the hashed password
+        const user = await getUserByUsername(username)
+        const matchingPassword = bcrypt.compareSync(password, user.password)
+        if (!matchingPassword) return;
+
         return user;
     } catch (error) {
         throw error;
@@ -92,11 +91,34 @@ async function getUserByUsername(username) {
     try {
         const { rows: [user] } = await client.query(`
         SELECT *
-        FROM username=$1;
+        FROM users
+        WHERE username=$1;
         `, [username]);
         return user
     } catch (error) {
         console.log('Error getting username ${username}')
+        throw error;
+    }
+};
+
+//find user by id
+//added function outside rubric
+async function getUserById(userId) {
+    try {
+        const { rows: [user] } = await client.query(`
+        SELECT id, username, name
+        FROM users
+        WHERE id=${ userId}
+      `);
+
+        if (!user) {
+            return null
+        }
+
+        user.routines = await getAllRoutinesByUser(userId);
+
+        return user;
+    } catch (error) {
         throw error;
     }
 };
@@ -119,5 +141,6 @@ module.exports = {
     createUser,
     getUser,
     getUserByUsername,
-    requireUser
+    requireUser,
+    getUserById
 }

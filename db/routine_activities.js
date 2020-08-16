@@ -48,14 +48,14 @@ async function updateRoutineActivity({ id, fields = {} }) {
 //create a new routine_activity, and return it
 async function addActivityToRoutine({ routineId, activityId, count, duration }) {
     try {
-        const { rows } = await client.query(`
+        const { rows: routine_activity } = await client.query(`
         INSERT INTO routine_activities ("routineId", "activityId", duration, count)
         VALUES ($1, $2, $3, $4)
         ON CONFLICT ("routineId", "activityId") DO NOTHING 
         RETURNING *;
     `, [routineId, activityId, count, duration]);
 
-        return rows;
+        return { routine_activity };
     } catch (error) {
         console.log('Error adding activity to routine', error)
         throw error;
