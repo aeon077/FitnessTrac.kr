@@ -42,28 +42,37 @@ routinesRouter.post('/', requireUser, async (req, res, next) => {
 //Updates a routine, public/private, name, and goal
 //must be logged in and author
 routinesRouter.patch('/:routineId', requireUser, async (req, res, next) => {
-    const { creatorId: id } = req.params;
-    const { public, name, goal } = req.body;
-    const { user } = req.user;
+    const { routineId } = req.params;
+    const { id: creatorId, public, name, goal } = req.body;
+    const newRoutine = {};
+
+    if (public) {
+        newRoutine.public = public;
+    };
+
+    if (name) {
+        newRoutine.name = name;
+    };
+
+    if (goal) {
+        newRoutine.goal = goal;
+    };
 
     try {
-        const { creatorId } = await getAllRoutinesByUser({ username })
-        console.log(username)
-        if (creatorId !== user.id) {
+        if (creatorId !== routineId) {
             next({
                 name: 'notTheCreator',
-                message: 'Only the creator can edit this routine.'
+                message: 'You are not the author of this routine'
             })
+        } else {
+            const updatedRoutine = await updateRoutine(routineId, newRoutine);
+            res.send({ routine: updatedRoutine });
         }
-        const routine = await updateRoutine(id, { public, name, goal });
-        res.send({ routine })
-    } catch {
-        next({
-            name: 'errorUpdateRoutine',
-            message: 'There was an error updating this routine'
-        })
+    } catch ({ name, message }) {
+        next({ name, message })
     }
-});
+}
+);
 
 
 //Hard deletes a routine, including its routineActivities.
@@ -73,7 +82,7 @@ routinesRouter.delete('/:routineId', requireUser, async (req, res, next) => {
     const user = req.user;
 
     try {
-        const [{ creatorId }] = await getAllRoutinesByUser({ user })
+        const [{ creatorId }] = await getAllRoutinesByUser(userId)
         if (creatorId !== user.id) {
             next({
                 name: 'notTheCreator',
@@ -93,7 +102,6 @@ routinesRouter.delete('/:routineId', requireUser, async (req, res, next) => {
 });
 
 //Attaches a single activity to a routine. Prevents duplication on (routineId, activityId) pair.
-
 routinesRouter.post('/:routineId/activities', async (req, res, next) => {
     const { routineId } = req.params;
     const { activityId, duration, count } = req.body;

@@ -10,7 +10,7 @@ routineActivtyRouter.use((req, res, next) => {
     next();
 });
 
-//Update the count or duration on the routine activity
+//Updates the count or duration on the routine activity
 //must be logged in and author
 routineActivtyRouter.patch('/:routineActivityId', requireUser, async (req, res, next) => {
     const { routineActivityId: id } = req.params;

@@ -11,7 +11,8 @@ const { getAllUsers,
     getActivitiesByRoutine,
     getPublicRoutinesByActivity,
     getPublicRoutinesByUser,
-    getUserByUsername
+    getUserByUsername,
+    getAllRoutinesByUser
 } = require('./index');
 
 //testing the database
@@ -51,10 +52,13 @@ async function testDB() {
         const userByUsername = await getUserByUsername("Bill");
         console.log('Result:', userByUsername)
 
+        console.log("Calling routines by username ")
+        const userRoutines = await getAllRoutinesByUser(4)
+        console.log('Result:', userRoutines)
 
-        // console.log("Calling Public routines by user ")
-        // const pubRoutUser = await getPublicRoutinesByUser(1);
-        // console.log('Result:', pubRoutUser)
+        console.log("Calling Public routines by user ")
+        const pubRoutUser = await getPublicRoutinesByUser(1);
+        console.log('Result:', pubRoutUser)
 
         console.log("Database test complete!");
     } catch (error) {

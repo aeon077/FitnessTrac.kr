@@ -1,7 +1,7 @@
 const express = require('express');
 const activitiesRouter = express.Router();
 
-const { getAllActivities, requireUser, createActivity, updateActivity, getPublicRoutinesByActivity, getActivitiesByRoutine } = require('../db');
+const { getAllActivities, requireUser, createActivity, updateActivity, getPublicRoutinesByActivity } = require('../db');
 
 //sets route for activities
 activitiesRouter.use((req, res, next) => {
@@ -49,7 +49,6 @@ activitiesRouter.post('/', requireUser, async (req, res, next) => {
 activitiesRouter.patch('/:activityId', requireUser, async (req, res, next) => {
     const { activityId } = req.params;
     const { name, description } = req.body;
-    ///**DO WE NEED THIS? */
     const updatedActivity = {};
 
     if (name) {

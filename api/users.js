@@ -102,7 +102,7 @@ usersRouter.post('/register', async (req, res, next) => {
     }
 });
 
-//Get a list of public routines for a particular user.
+//Gets a list of public routines for a particular user.
 usersRouter.get('/:username/routines', async function (req, res, next) {
     const { username } = req.params;
     try {

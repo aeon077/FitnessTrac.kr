@@ -62,8 +62,7 @@ async function getAllActivities() {
     }
 };
 
-//createActivity({ name, description })
-//return the new activity
+//creates a new activity for the database
 async function createActivity({
     name,
     description,
@@ -82,10 +81,7 @@ async function createActivity({
     }
 }
 
-//updateActivity({ id, name, description })
-//don't try to update the id
-//do update the name and description 
-//return the updated activity
+//updates the name and description and returns the updated activity 
 async function updateActivity({ id, fields = {} }) {
     //setString for mapping out name and description
     const setString = Object.keys(fields).map(

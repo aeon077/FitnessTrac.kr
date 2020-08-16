@@ -43,7 +43,8 @@ async function createInitialRoutines() {
 //WHERE statement filters rows where left join does not succeed (in both a and b)
 async function getActivitiesByRoutine(routine) {
     const { id } = routine
-    const { rows } = await client.query(`
+    try {
+        const { rows } = await client.query(`
         SELECT 
         a.id,
         a.name,
@@ -56,7 +57,11 @@ async function getActivitiesByRoutine(routine) {
         ON a.id = ra."activityId"
         WHERE ra."routineId" = $1;
     `, [id])
-    return rows;
+        return rows;
+    } catch (error) {
+        console.log(`Error getting activities for routine`, error);
+        throw error;
+    }
 }
 
 //select and return an array of all routines, *include their activities*
@@ -86,7 +91,6 @@ async function getAllRoutines() {
 }
 
 //creates and returns the new routine
-
 async function createRoutine({
     creatorId, public, name, goal
 }) {
@@ -157,25 +161,24 @@ async function getPublicRoutines() {
     }
 }
 
-//select and return an array of all routines made by user, include their activities
+//selects and returns an array of all routines made by user, include their activities
 
-async function getAllRoutinesByUser({ username }) {
-    const user = await getUserByUsername({ username });
+async function getAllRoutinesByUser(userId) {
     try {
-        const { rows: routines } = await client.query(`
-        SELECT *
+        const { rows: routineIds } = await client.query(`
+        SELECT id
         FROM routines
-        WHERE "creatorId"=$1
-        `, [user.id]);
+        WHERE "creatorId"=${userId}
+        `);
 
-        const results = routines.map(async (routine) => {
+        const results = routineIds.map(async (routine) => {
             const activities = await getActivitiesByRoutine(routine);
             routine.activities = activities;
             return routine;
         });
 
-        const userActivities = await Promise.all(results).then(function (arr) {
-            return arr
+        const userActivities = await Promise.all(results).then(function (ele) {
+            return ele
         });
         return userActivities;
     } catch (error) {
@@ -185,24 +188,20 @@ async function getAllRoutinesByUser({ username }) {
 }
 
 
-//select and return an array of public routines made by user, include their activities
-
-async function getPublicRoutinesByUser({ username }) {
-    const user = await getUserByUsername({ username });
-    console.log(user)
-
+//selects and returns an array of public routines made by user, include their activities
+async function getPublicRoutinesByUser(userId) {
     try {
-        const { rows: routines } = await client.query(`
+        const { rows: routineIds } = await client.query(`
         SELECT *
         FROM routines
-        WHERE "creatorId"=$1
+        WHERE "creatorId"=${userId}
         AND public='true';
-        `, [user.id]);
+        `);
 
-        const results = routines.map(async (routine) => {
+        const results = routineIds.map(async (routine) => {
             const activities = await getActivitiesByRoutine(routine);
             routine.activities = activities;
-            return activity;
+            return activities;
         });
 
         const routineEle = await Promise.all(results).then((elem) => {

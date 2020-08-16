@@ -1,6 +1,5 @@
 const { client } = require('./client');
 const bcrypt = require('bcrypt');
-const { getAllRoutinesByUser } = require('./index');
 
 //preloads initial users into database
 async function createInitialUsers() {
@@ -49,8 +48,7 @@ async function getAllUsers() {
     }
 }
 
-//createUser({ username, password })
-//make sure to hash the password before storing it to the database --stretch goal
+//creates a new user through registration. Passwords hashed in api.
 async function createUser({
     username,
     password,
@@ -101,28 +99,6 @@ async function getUserByUsername(username) {
     }
 };
 
-//find user by id
-//added function outside rubric
-async function getUserById(userId) {
-    try {
-        const { rows: [user] } = await client.query(`
-        SELECT id, username, name
-        FROM users
-        WHERE id=${ userId}
-      `);
-
-        if (!user) {
-            return null
-        }
-
-        user.routines = await getAllRoutinesByUser(userId);
-
-        return user;
-    } catch (error) {
-        throw error;
-    }
-};
-
 function requireUser(req, res, next) {
     if (!req.user) {
         next({
@@ -142,5 +118,4 @@ module.exports = {
     getUser,
     getUserByUsername,
     requireUser,
-    getUserById
 }
